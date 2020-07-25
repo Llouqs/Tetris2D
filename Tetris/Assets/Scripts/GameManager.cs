@@ -6,15 +6,19 @@ using UnityEngine.UI;
 public class GameManager : MonoBehaviour
 {
     public GameObject[] Shapes;
-    public Text Scores;
-    public Text GameSpeed;
-    public Text NumberRows;
     private GameObject shape;
     private Vector2 previewShapePosition = new Vector2(15, 12);
+    public Color[] palette;
 
     void Start()
     {
-        Instantiate(Shapes[Random.Range(0, Shapes.Length)], transform.position, Quaternion.identity);
+        var currentShapeNumber = Random.Range(0, Shapes.Length);
+        var currentShape = Shapes[currentShapeNumber];
+        //foreach(GameObject tmpChild in currentShape.transform)
+        //{
+        //    tmpChild.GetComponent<SpriteRenderer>().color = palette[currentShapeNumber];
+        //}
+        Instantiate(currentShape, transform.position, Quaternion.identity).transform.SetParent(transform);
         SpawnPreviewShape();
     }
 
@@ -27,18 +31,14 @@ public class GameManager : MonoBehaviour
     
     public void SpawnPreviewShape()
     {
-        shape = Instantiate(Shapes[Random.Range(0, Shapes.Length)], previewShapePosition, Quaternion.identity);
+        var currentShapeNumber = Random.Range(0, Shapes.Length);
+        var currentShape = Shapes[currentShapeNumber];
+        //foreach (GameObject tmpChild in currentShape.transform)
+        //{
+        //    tmpChild.GetComponent<SpriteRenderer>().color = palette[currentShapeNumber];
+        //}
+        shape = Instantiate(currentShape, transform.position, Quaternion.identity);
+        shape.transform.SetParent(transform);
         shape.GetComponent<GameShape>().enabled = false;
-    }
-
-    public void UpdateScores(int scores, int rows)
-    {
-        Scores.text = scores.ToString();
-        NumberRows.text = rows.ToString();
-    }
-
-    public void UpdateSpeed(float speed)
-    {
-        GameSpeed.text = speed.ToString("0");
     }
 }

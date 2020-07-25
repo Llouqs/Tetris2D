@@ -8,8 +8,8 @@ using UnityEngine.UI;
 public class GameShape : MonoBehaviour
 {
     public Vector3 shapeRotation;
-    public static int GameBoardHeight = 20;
-    public static int GameBoardWidth = 10;
+    public static int GameBoardHeight = 200;
+    public static int GameBoardWidth = 200;
 
     private float previousFallTime;
     private const float keyDelay = 0.1f;
@@ -48,20 +48,20 @@ public class GameShape : MonoBehaviour
         if (rowsForUpdateDifficult > 5 && fallTime >= 0.15f)
         {
             fallTime -= 0.1f;
-            FindObjectOfType<GameManager>().UpdateSpeed(fallTime * 10);
+            FindObjectOfType<UIManager>().UpdateSpeed(fallTime * 10);
             rowsForUpdateDifficult = 0;
         }
 
         if (Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus))
         {
             if (fallTime <= 1.6f) fallTime += 0.1f;
-            FindObjectOfType<GameManager>().UpdateSpeed(fallTime * 10);
+            FindObjectOfType<UIManager>().UpdateSpeed(fallTime * 10);
         }
 
         if (Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.KeypadPlus))
         {
             if (fallTime >= 0.15f) fallTime -= 0.1f;
-            FindObjectOfType<GameManager>().UpdateSpeed(fallTime * 10);
+            FindObjectOfType<UIManager>().UpdateSpeed(fallTime * 10);
         }
 
     }
@@ -103,7 +103,7 @@ public class GameShape : MonoBehaviour
                 case 4: curentScores += 120; break;
             }
             numberOfRowsThisTurn = 0;
-            FindObjectOfType<GameManager>().UpdateScores(curentScores, numberOfAllRows);
+            FindObjectOfType<UIManager>().UpdateScores(curentScores, numberOfAllRows);
         }
     }
 
