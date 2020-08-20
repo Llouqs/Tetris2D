@@ -1,34 +1,31 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    public Color UIColor;
-    public Color UIFieldColor;
-    public Font UIFont;
-    public Text[] UIElements;
-
+    public Color uiColor;
+    public Font uiFont;
+    public Text[] uiElements;
     public void Start()
     {
-        GameObject tetrisField = GameObject.Find("TetrisField");
-        tetrisField.GetComponent<Image>().color = UIFieldColor;
-        UIColor.a = 1;
-        foreach (Text element in UIElements)
+        uiColor.a = 1;
+        foreach (var element in uiElements)
         {
-            element.font = UIFont;
-            element.color = UIColor;
+            element.font = uiFont;
+            element.color = uiColor;
         }
     }
     public void UpdateScores(int scores, int rows)
     {
-        UIElements[0].text = scores.ToString();
-        UIElements[1].text = rows.ToString();
+        uiElements[0].text = scores.ToString();
+        uiElements[1].text = rows.ToString();
     }
 
     public void UpdateSpeed(float speed)
     {
-        UIElements[2].text = speed.ToString("0");
+        uiElements[2].text = speed.ToString("0");
     }
 }

@@ -3,18 +3,14 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class MenuSystem : MonoBehaviour
 {
-    public GameObject TetrisWindowPrefab;
+    public GameObject tetrisWindowPrefab;
     public void PlayAgain()
     {
         SceneManager.LoadScene("Level");
-    }
-
-    public void CreateNewTetris()
-    {
-        Instantiate(TetrisWindowPrefab, transform.position, Quaternion.identity).transform.SetParent(GameObject.Find("Canvas").transform);
     }
 }

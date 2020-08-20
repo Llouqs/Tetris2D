@@ -8,23 +8,11 @@ using UnityEngine.UI;
 public class GameShape : MonoBehaviour
 {
     public Vector3 shapeRotation;
-    public static int GameBoardHeight = 200;
-    public static int GameBoardWidth = 200;
-
-    private float previousFallTime;
-    private const float keyDelay = 0.1f;
-    private float timePassed = 0f;
-    private static float fallTime = 0.9f;
-    private static Transform[,] gameGrid = new Transform[GameBoardWidth, GameBoardHeight];
-    private static int numberOfRowsThisTurn;
-    private static int numberOfAllRows;
-    private static int curentScores;
-    private static int rowsForUpdateDifficult;
-
+    /*
     void Update()
     {
-        control();
-        if (Time.time - previousFallTime > (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S) ? 0.05f : fallTime))
+        Control();
+        if (Time.time - _previousFallTime > (Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.S) ? 0.05f : _fallTime))
         {
             transform.position += new Vector3(0, -1, 0);
             if (!CheckCollisionWalls())
@@ -35,9 +23,9 @@ public class GameShape : MonoBehaviour
                 this.enabled = false;
                 if (IsGameOver())
                     GameOver();
-                else FindObjectOfType<GameManager>().SpawnShape();
+                else _gameManager.SpawnShape();
             }
-            previousFallTime = Time.time;
+            _previousFallTime = Time.time;
         }
         UpdateScores();
         UpdateDifficult();
@@ -45,42 +33,42 @@ public class GameShape : MonoBehaviour
 
     private void UpdateDifficult()
     {
-        if (rowsForUpdateDifficult > 5 && fallTime >= 0.15f)
+        if (_rowsForUpdateDifficult > 5 && _fallTime >= 0.15f)
         {
-            fallTime -= 0.1f;
-            FindObjectOfType<UIManager>().UpdateSpeed(fallTime * 10);
-            rowsForUpdateDifficult = 0;
+            _fallTime -= 0.1f;
+            _uiManager.UpdateSpeed(_fallTime * 10);
+            _rowsForUpdateDifficult = 0;
         }
 
         if (Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus))
         {
-            if (fallTime <= 1.6f) fallTime += 0.1f;
-            FindObjectOfType<UIManager>().UpdateSpeed(fallTime * 10);
+            if (_fallTime <= 1.6f) _fallTime += 0.1f;
+            _uiManager.UpdateSpeed(_fallTime * 10);
         }
 
         if (Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.KeypadPlus))
         {
-            if (fallTime >= 0.15f) fallTime -= 0.1f;
-            FindObjectOfType<UIManager>().UpdateSpeed(fallTime * 10);
+            if (_fallTime >= 0.15f) _fallTime -= 0.1f;
+            _uiManager.UpdateSpeed(_fallTime * 10);
         }
 
     }
 
-    void control()
+    private void Control()
     {
-        timePassed += Time.deltaTime;
-        if ((Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) && timePassed >= keyDelay)
+        _timePassed += Time.deltaTime;
+        if ((Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A)) && _timePassed >= KeyDelay)
         {
             transform.position += new Vector3(-1, 0, 0);
             if (!CheckCollisionWalls()) transform.position += new Vector3(1, 0, 0);
-            timePassed = 0f;
+            _timePassed = 0f;
         }
 
-        else if ((Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) && timePassed >= keyDelay)
+        else if ((Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D)) && _timePassed >= KeyDelay)
         {
             transform.position += new Vector3(1, 0, 0);
             if (!CheckCollisionWalls()) transform.position += new Vector3(-1, 0, 0);
-            timePassed = 0f;
+            _timePassed = 0f;
         }
 
         if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
@@ -91,104 +79,105 @@ public class GameShape : MonoBehaviour
         }
 
     }
-    void UpdateScores()
+
+    private void UpdateScores()
     {
-        if (numberOfRowsThisTurn > 0)
+        if (_numberOfRowsThisTurn > 0)
         {
-            switch (numberOfRowsThisTurn)
+            switch (_numberOfRowsThisTurn)
             {
-                case 1: curentScores += 4; break;
-                case 2: curentScores += 12; break;
-                case 3: curentScores += 40; break;
-                case 4: curentScores += 120; break;
+                case 1: _currentScores += 4; break;
+                case 2: _currentScores += 12; break;
+                case 3: _currentScores += 40; break;
+                case 4: _currentScores += 120; break;
             }
-            numberOfRowsThisTurn = 0;
-            FindObjectOfType<UIManager>().UpdateScores(curentScores, numberOfAllRows);
+            _numberOfRowsThisTurn = 0;
+            _uiManager.UpdateScores(_currentScores, _numberOfAllRows);
         }
     }
 
-    void CheckCompleteLines()
+    private void CheckCompleteLines()
     {
-        for (int i = GameBoardHeight - 1; i >= 0; i--)
+        for (var i = GameBoardHeight - 1; i >= 0; i--)
         {
-            if (ComleteLine(i))
-            {
-                DeleteLine(i);
-                LinesDown(i);
-            }
+            if (!CompleteLine(i)) continue;
+            DeleteLine(i);
+            LinesDown(i);
         }
     }
 
-    void LinesDown(int i)
+    private void LinesDown(int i)
     {
-        for (int k = i; k < GameBoardHeight; k++)
+        for (var k = i; k < GameBoardHeight; k++)
         {
-            for (int j = 0; j < GameBoardWidth; j++)
+            for (var j = 0; j < GameBoardWidth; j++)
             {
-                if (gameGrid[j, k] != null)
-                {
-                    gameGrid[j, k - 1] = gameGrid[j, k];
-                    gameGrid[j, k] = null;
-                    gameGrid[j, k - 1].transform.position -= new Vector3(0, 1, 0);
-                }
+                if (GameGrid[j, k] == null) continue;
+                GameGrid[j, k - 1] = GameGrid[j, k];
+                GameGrid[j, k] = null;
+                GameGrid[j, k - 1].transform.position -= new Vector3(0, 1, 0);
             }
         }
     }
 
-    void DeleteLine(int i)
+    private void DeleteLine(int i)
     {
         for (int j = 0; j < GameBoardWidth; j++)
         {
-            Destroy(gameGrid[j, i].gameObject);
-            gameGrid[j, i] = null;
+            Destroy(GameGrid[j, i].gameObject);
+            GameGrid[j, i] = null;
         }
     }
 
-    bool ComleteLine(int i)
+    private bool CompleteLine(int i)
     {
-        for (int j = 0; j < GameBoardWidth; j++)
+        for (var j = 0; j < GameBoardWidth; j++)
         {
-            if (gameGrid[j, i] == null) return false;
+            if (GameGrid[j, i] == null) return false;
         }
-        numberOfRowsThisTurn++;
-        numberOfAllRows++;
-        rowsForUpdateDifficult++;
+        _numberOfRowsThisTurn++;
+        _numberOfAllRows++;
+        _rowsForUpdateDifficult++;
         return true;
     }
 
-    void AddToGrid()
+    private void AddToGrid()
     {
         foreach (Transform children in transform)
         {
-            int roundedX = Mathf.RoundToInt(children.transform.position.x);
-            int roundedY = Mathf.RoundToInt(children.transform.position.y);
+            var position = children.transform.position;
+            var roundedX = Mathf.RoundToInt(position.x);
+            var roundedY = Mathf.RoundToInt(position.y);
 
-            gameGrid[roundedX, roundedY] = children;
+            GameGrid[roundedX, roundedY] = children;
         }
     }
 
-    bool CheckCollisionWalls()
+    private bool CheckCollisionWalls()
     {
         foreach (Transform children in transform)
         {
-            int roundedX = Mathf.RoundToInt(children.transform.position.x);
-            int roundedY = Mathf.RoundToInt(children.transform.position.y);
+            var position = children.transform.position;
+            var roundedX = Mathf.RoundToInt(position.x);
+            var roundedY = Mathf.RoundToInt(position.y);
             if (roundedX < 0 || roundedX >= GameBoardWidth || roundedY < 0 || roundedY >= GameBoardHeight) return false;
-            if (gameGrid[roundedX, roundedY] != null) return false;
+            if (GameGrid[roundedX, roundedY] != null) return false;
         }
         return true;
     }
-    bool IsGameOver()
+
+    private bool IsGameOver()
     {
-        for (int i = GameBoardWidth - 1; i >= 0; i--)
+        for (var i = GameBoardWidth - 1; i >= 0; i--)
         {
-            if (gameGrid[i, GameBoardHeight - 2] != null)
+            if (GameGrid[i, GameBoardHeight - 2] != null)
                 return true;
         }
         return false;
     }
-    void GameOver()
+
+    private void GameOver()
     {
         SceneManager.LoadScene("GameOver");
-    }
+    }*/
 }
