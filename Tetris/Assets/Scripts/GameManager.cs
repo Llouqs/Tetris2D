@@ -10,18 +10,19 @@ using Random = UnityEngine.Random;
 public class GameManager : MonoBehaviour
 {
     public GameObject[] shapes;
-    private GameObject _currentShape;
-    private GameObject _nextShape;
-    private Vector2 _previewShapePosition = new Vector2(15, 12);
-    [SerializeField] private const int GameBoardHeight = 200;
-    [SerializeField] private const int GameBoardWidth = 100;
+    [SerializeField] private GameObject currentShape;
+    [SerializeField] private GameObject nextShape;
+    private Vector3 _previewShapePosition = new Vector3(100, 0, 0);
+    private Vector3 _currentShapePosition = new Vector3(-5, 85, 0);
+    [SerializeField] private const int GameBoardHeight = 20;
+    [SerializeField] private const int GameBoardWidth = 10;
     private Transform[,] _gameGrid = new Transform[GameBoardWidth, GameBoardHeight];
     private int _numberOfRowsThisTurn = 0;
     private int _numberOfAllRows = 0;
     private int _currentScores = 0;
     private int _rowsForUpdateDifficult = 0;
     public UIManager uiManager;
-    private float _previousFallTime = 0f;
+    private float _previousFallTime;
     private const float KeyDelay = 0.1f;
     private float _timePassed = 0f;
     private float _fallTime = 0.9f;
@@ -35,8 +36,10 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         var currentShapeNumber = Random.Range(0, shapes.Length);
-        var currentShape = shapes[currentShapeNumber];
-        Instantiate(currentShape, transform.position, Quaternion.identity).transform.SetParent(transform);
+        currentShape = shapes[currentShapeNumber];
+        currentShape.transform.localScale = new Vector3(10, 10, 0);
+        currentShape = Instantiate(currentShape, transform.position + _currentShapePosition, Quaternion.identity);
+        currentShape.transform.SetParent(transform);
         SpawnPreviewShape();
     }
 
@@ -45,10 +48,10 @@ public class GameManager : MonoBehaviour
         Control();
         if (Time.time - _previousFallTime > (Input.GetKey(moveDown) ? 0.05f : _fallTime))
         {
-            transform.position += new Vector3(0, -1, 0);
-            // if (!CheckCollisionWalls())
+            currentShape.transform.localPosition += new Vector3(0, -10, 0);
+            if (!CheckCollisionWalls())
             // {
-            //     transform.position += new Vector3(0, 1, 0);
+            currentShape.transform.localPosition += new Vector3(0, 10, 0);
             //     AddToGrid();
             //     CheckCompleteLines();
             //     this.enabled = false;
@@ -61,21 +64,39 @@ public class GameManager : MonoBehaviour
         UpdateDifficult();
         UpdateScores();
     }
+    
+    private bool CheckCollisionWalls()
+    {
+        foreach (Transform children in currentShape.transform)
+        {
+            var position = children.transform.position;
+            Debug.Log(position);
+            var roundedX = Mathf.RoundToInt((position.x + 45) /10);
+            var roundedY = Mathf.RoundToInt((position.y + 95) /10);
+            Debug.Log(roundedX);
+            Debug.Log(roundedY);
+            if (roundedX <= 0 || roundedX >= GameBoardWidth || roundedY <= 0 || roundedY >= GameBoardHeight) return false;
+            if (_gameGrid[roundedX, roundedY] != null) return false;
+        }
+        return true;
+    }
 
     public void SpawnShape()
     {
-        _currentShape.transform.localPosition = transform.position;
-        _currentShape.GetComponent<GameShape>().enabled = true;
+        nextShape.transform.localPosition = _currentShapePosition;
+        nextShape.GetComponent<GameShape>().enabled = true;
+        currentShape = nextShape;
         SpawnPreviewShape();
     }
     
     private void SpawnPreviewShape()
     {
-        var currentShapeNumber = Random.Range(0, shapes.Length);
-        var currentShape = shapes[currentShapeNumber];
-        _currentShape = Instantiate(currentShape, transform.position, Quaternion.identity);
-        _currentShape.transform.SetParent(transform);
-        _currentShape.GetComponent<GameShape>().enabled = false;
+        var nextShapeNumber = Random.Range(0, shapes.Length);
+        nextShape = shapes[nextShapeNumber];
+        nextShape.transform.localScale = new Vector3(10, 10, 0);
+        nextShape = Instantiate(nextShape, transform.position + _previewShapePosition, Quaternion.identity);
+        nextShape.transform.SetParent(transform);
+        nextShape.GetComponent<GameShape>().enabled = false;
     }
     
     private void Control()
@@ -83,21 +104,21 @@ public class GameManager : MonoBehaviour
         _timePassed += Time.deltaTime;
         if (Input.GetKey(moveLeft) && _timePassed >= KeyDelay)
         {
-            transform.position += new Vector3(-1, 0, 0);
+            currentShape.transform.localPosition += new Vector3(-10, 0, 0);
             //if (!CheckCollisionWalls()) transform.position += new Vector3(1, 0, 0);
             _timePassed = 0f;
         }
 
         else if (Input.GetKey(moveRight) && _timePassed >= KeyDelay)
         {
-            transform.position += new Vector3(1, 0, 0);
+            currentShape.transform.localPosition += new Vector3(10, 0, 0);
             //if (!CheckCollisionWalls()) transform.position += new Vector3(-1, 0, 0);
             _timePassed = 0f;
         }
 
         if (Input.GetKeyDown(rotateKey))
         {
-            transform.RotateAround(transform.TransformPoint(_currentShape.GetComponent<GameShape>().shapeRotation), new Vector3(0, 0, 1), 90);
+            currentShape.transform.RotateAround(currentShape.transform.TransformPoint(currentShape.GetComponent<GameShape>().shapeRotation), new Vector3(0, 0, 1), 90);
             //if (!CheckCollisionWalls())
             //    transform.RotateAround(transform.TransformPoint(_currentShape.GetComponent<GameShape>().shapeRotation), new Vector3(0, 0, 1), -90);
         }
@@ -118,7 +139,7 @@ public class GameManager : MonoBehaviour
             if (_fallTime <= 1.6f) _fallTime += 0.1f;
             uiManager.UpdateSpeed(_fallTime * 10);
         }
-
+        
         if (Input.GetKeyDown(upSpeed))
         {
             if (_fallTime >= 0.15f) _fallTime -= 0.1f;
