@@ -8,7 +8,6 @@ using UnityEngine.UI;
 
 public class MenuSystem : MonoBehaviour
 {
-    public GameObject tetrisWindowPrefab;
     public void PlayAgain()
     {
         SceneManager.LoadScene("Level");
