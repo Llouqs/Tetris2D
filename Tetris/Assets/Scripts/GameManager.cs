@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
     public GameObject[] shapes;
     [SerializeField] private GameObject currentShape;
     [SerializeField] private GameObject nextShape;
-    private readonly Vector3 _previewShapePosition = new Vector3(100, 0, 0);
+    private readonly Vector3 _previewShapePosition = new Vector3(20, 120, 0);
     private readonly Vector3 _currentShapePosition = new Vector3(-5, 85, 0);
     [SerializeField] private const int GameBoardHeight = 20;
     [SerializeField] private const int GameBoardWidth = 10;
@@ -51,13 +51,13 @@ public class GameManager : MonoBehaviour
             currentShape.transform.localPosition += new Vector3(0, -10, 0);
             if (!CheckCollisionWalls())
             {
-            currentShape.transform.localPosition += new Vector3(0, 10, 0);
-            AddToGrid();
-            CheckCompleteLines();
-            if (IsGameOver())
-                GameOver();
-            else
-                SpawnShape();
+                currentShape.transform.localPosition += new Vector3(0, 10, 0);
+                AddToGrid();
+                CheckCompleteLines();
+                if (IsGameOver())
+                    GameOver();
+                else
+                    SpawnShape();
             }
             _previousFallTime = Time.time;
         }
@@ -143,7 +143,8 @@ public class GameManager : MonoBehaviour
 
     private void GameOver()
     {
-        SceneManager.LoadScene("GameOver");
+        this.enabled = false;
+        //SceneManager.LoadScene("GameOver");
     }
 
     private void SpawnShape()
@@ -183,9 +184,9 @@ public class GameManager : MonoBehaviour
 
         if (Input.GetKeyDown(rotateKey))
         {
-            currentShape.transform.RotateAround(currentShape.transform.TransformPoint(currentShape.GetComponent<GameShape>().shapeRotation), new Vector3(0, 0, 1), 90);
+            currentShape.GetComponent<GameShape>().RotateShape(currentShape, true);
             if (!CheckCollisionWalls())
-                currentShape.transform.RotateAround(currentShape.transform.TransformPoint(currentShape.GetComponent<GameShape>().shapeRotation), new Vector3(0, 0, 1), -90);
+                currentShape.GetComponent<GameShape>().RotateShape(currentShape, false);
         }
 
     }
